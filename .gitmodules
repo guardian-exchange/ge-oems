@@ -1,0 +1,3 @@
+[submodule "stock-market"]
+	path = stock-market
+	url = https://github.com/guardian-exchange/ge-stock-market

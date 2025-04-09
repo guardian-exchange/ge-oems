@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connect to WebSocket</title>
+</head>
+<body>
+    <h2>Connect to Stock</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.stock_name.label_tag }} {{ form.stock_name }}
+        <br><br>
+        <button type="submit">Connect</button>
+    </form>
+</body>
+</html>

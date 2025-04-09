@@ -11,3 +11,6 @@ class SignupForm(UserCreationForm):
 
 class LoginForm(AuthenticationForm):
     pass
+
+class StockConnectForm(forms.Form):
+    stock_name = forms.CharField(label="Stock Name", max_length=100)
