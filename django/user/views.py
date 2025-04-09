@@ -67,6 +67,9 @@ def logout_view(request):
     logout(request)
     return redirect("login")
 
+# NOTE: Added for testing the endpoint
+# from django.views.decorators.csrf import csrf_exempt
+# @csrf_exempt
 def make_ws_con(request):
     if request.method == "POST":
         form = StockConnectForm(data=request.POST)
@@ -78,3 +81,5 @@ def make_ws_con(request):
         else:
             form = StockConnectForm()
         return render(request, "users/ws_conn_form.html", {"form": form})
+    else:
+        return HttpResponse(f"Only POST method is accepted!")

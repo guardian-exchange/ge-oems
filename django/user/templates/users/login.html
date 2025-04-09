@@ -1,6 +1,28 @@
-<h2>Login</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Log In</button>
-</form>
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Guardian Exchange</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'users/styles.css' %}">
+</head>
+<body>
+  <h1>Index of /user/login</h1>
+  <hr>
+
+  <div class="login-box">
+    <form action="{% url 'login' %}" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Login">
+    </form>
+    <p class="signup-text">
+      Not signed up? <a href="{% url 'signup' %}" class="signup-button">Create an account</a>
+    </p>
+  </div>
+
+  <hr>
+  <address>Guardian Exchange Server at Port :80</address>
+</body>
+</html>
