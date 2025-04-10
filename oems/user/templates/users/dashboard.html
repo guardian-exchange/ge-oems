@@ -6,19 +6,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - Guardian Exchange</title>
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="{% static 'users/styles.css' %}"
-    />
+    <link rel="stylesheet" href="{% static 'users/styles.css' %}" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <h1>Stock Dashboard</h1>
+    <h1>Index of /user/</h1>
     <hr />
 
-    <div class="dashboard" id="dashboard"></div>
+    <div class="layout">
+      <nav class="sidebar">
+        <ul>
+          <li><a href="/profile">📁 Profile</a></li>
+          <li><a href="{% url 'logout' %}">📁 Logout</a></li>
+        </ul>
+      </nav>
+    </div>
 
+    <main class="dashboard" id="dashboard" style="margin-top:20px;">
+      <!-- JS renders the dashboard here -->
+    </main>
+
+    <hr />
     <address>Guardian Exchange Server at Port :80</address>
 
     <script type="module" src="{% static 'users/dashboard.js' %}"></script>
