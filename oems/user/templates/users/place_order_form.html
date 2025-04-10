@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Place Order</title>
+</head>
+<body>
+    <h2>Place Order</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.stock_name.label_tag }} {{ form.stock_name }}
+        {{ form.stock_quantity.label_tag }} {{ form.stock_quantity }}
+        {{ form.stock_side.label_tag }} {{ form.stock_side }}
+        <br><br>
+        <button type="submit">Place</button>
+    </form>
+</body>
+</html>

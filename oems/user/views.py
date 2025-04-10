@@ -1,9 +1,10 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
-from .forms import SignupForm, LoginForm, StockConnectForm
+from .forms import SignupForm, LoginForm, StockConnectForm, PlaceOrderForm
 from django.contrib.auth.decorators import login_required
 from stocks.models import Stock
+from user.models import UserStock, User
 import websocket
 import threading
 import json
@@ -23,7 +24,58 @@ def update_stock(message):
         if updated_count == 0:
             print(f"[Warning] Stock '{stock_name}' not found in DB.")
         else:
-            print(f"[Info] Updated '{stock_name}' to price {new_price}.")       
+            print(f"[Info] Updated '{stock_name}' to price {new_price}.")   
+
+def do_place(user, stock_name, stock_quantity, stock_side):
+    try:
+        # Lock stock and user rows for consistency
+        stock = Stock.objects.select_for_update().get(stock_name=stock_name)
+        
+        current_price = stock.current_price
+        total_cost = current_price * int(stock_quantity)
+
+        if stock_side.lower() == "buy":
+            if total_cost > user.balance:
+                print(f"Insufficient balance, cost {total_cost} and balance {user.balance}")
+                return
+
+            user.balance -= total_cost
+            user.save()
+
+            # Update or create UserStock
+            user_stock, _ = UserStock.objects.get_or_create(user=user, stock=stock)
+            user_stock.quantity += stock_quantity
+            user_stock.save()
+
+            print(f"Bought {stock_quantity} {stock_name} at {current_price} each.")
+
+        elif stock_side.lower() == "sell":
+            try:
+                user_stock = UserStock.objects.select_for_update().get(user=user, stock=stock)
+            except UserStock.DoesNotExist:
+                print(f"You don't own any {stock_name} to sell.")
+                return
+
+            if user_stock.quantity < stock_quantity:
+                print(f"Not enough {stock_name} to sell.")
+                return
+
+            user_stock.quantity -= stock_quantity
+            user_stock.save()
+
+            user.balance += total_cost
+            user.save()
+
+            print(f"Sold {stock_quantity} {stock_name} at {current_price} each.")
+
+        else:
+            print("Invalid stock_side. Use 'buy' or 'sell'.")
+            return
+
+    except Stock.DoesNotExist:
+        print(f"Stock '{stock_name}' not found.")
+    except Exception as e:
+        print(f"Error placing order: {e}")
     
 def open_ws(stock_name):
     def on_message(ws, message):
@@ -84,16 +136,30 @@ def logout_view(request):
 # NOTE: Added for testing the endpoint
 # from django.views.decorators.csrf import csrf_exempt
 # @csrf_exempt
+@login_required
 def make_ws_con(request):
     if request.method == "POST":
         form = StockConnectForm(data=request.POST)
         if form.is_valid():
-            # make request
             stock_name = form.cleaned_data["stock_name"]
             open_ws(stock_name)  # Start WebSocket connection
-            return HttpResponse(f"<h1>Making Connection ...</h1>")
-        else:
-            form = StockConnectForm()
-        return render(request, "users/ws_conn_form.html", {"form": form})
+            return HttpResponse(f"<h1>Making connection to {stock_name} ...</h1>")
     else:
-        return HttpResponse(f"Only POST method is accepted!")
+        form = StockConnectForm()
+
+    return render(request, "users/ws_conn_form.html", {"form": form})
+
+@login_required
+def place_order(request):
+    if request.method == "POST":
+        form = PlaceOrderForm(data=request.POST)
+        if form.is_valid():
+            stock_name = form.cleaned_data["stock_name"]
+            stock_quantity = form.cleaned_data["stock_quantity"]
+            stock_side = form.cleaned_data["stock_side"]
+            do_place(request.user, stock_name, stock_quantity, stock_side)
+            return HttpResponse(f"<h1>Placing order...</h1>")
+    else:
+        form = PlaceOrderForm()
+
+    return render(request, "users/place_order_form.html", {"form": form})
