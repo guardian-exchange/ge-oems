@@ -106,7 +106,6 @@ def open_ws(stock_name):
 @login_required
 def index(request):
     return render(request, "users/dashboard.html")
-    # return HttpResponse(f"<h1>Welcome, {request.user.username}!</h1>")
 
 def signup_view(request):
     if request.method == "POST":
