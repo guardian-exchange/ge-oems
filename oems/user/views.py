@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from .forms import SignupForm, LoginForm, StockConnectForm
 from django.contrib.auth.decorators import login_required
+from stocks.models import Stock
 import websocket
 import threading
 import json
@@ -12,10 +13,22 @@ import os
 WS_HOST = os.environ.get("SM_HOST", "localhost")
 WS_PORT = os.environ.get("SM_PORT", "8765")
 
-
+def update_stock(message):
+    """
+    Update stock prices based on a dictionary where keys are stock names
+    and values are the new prices.
+    """
+    for stock_name, new_price in message.items():
+        updated_count = Stock.objects.filter(stock_name=stock_name).update(current_price=float(new_price))
+        if updated_count == 0:
+            print(f"[Warning] Stock '{stock_name}' not found in DB.")
+        else:
+            print(f"[Info] Updated '{stock_name}' to price {new_price}.")       
+    
 def open_ws(stock_name):
     def on_message(ws, message):
-        print(f"Received from WS: {message}")
+        print(f"Received from WS: {json.loads(message)}")
+        update_stock(json.loads(message))
 
     def on_error(ws, error):
         print(f"WebSocket error: {error}")
