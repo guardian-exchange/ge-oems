@@ -1,0 +1,3 @@
+- [ ] Abstract out multiple instances of hard coded Stock names.
+- [ ] Make GET Websocket endpoint which a client can use to get current stock prices.
+- [ ] Update dashboard to use the Websocket GET undpoint rather than directly communicating with the stock-market server. 

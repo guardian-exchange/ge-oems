@@ -82,9 +82,8 @@ def logout_view(request):
     return redirect("login")
 
 # NOTE: Added for testing the endpoint
-from django.views.decorators.csrf import csrf_exempt
-# @csrf_exemptgo.views.decorators.csrf import csrf_exempt
-# @csrf_exem
+# from django.views.decorators.csrf import csrf_exempt
+# @csrf_exempt
 def make_ws_con(request):
     if request.method == "POST":
         form = StockConnectForm(data=request.POST)
