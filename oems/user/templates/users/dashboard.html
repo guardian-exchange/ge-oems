@@ -1,0 +1,26 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Guardian Exchange</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'users/styles.css' %}"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <h1>Stock Dashboard</h1>
+    <hr />
+
+    <div class="dashboard" id="dashboard"></div>
+
+    <address>Guardian Exchange Server at Port :80</address>
+
+    <script type="module" src="{% static 'users/dashboard.js' %}"></script>
+  </body>
+</html>

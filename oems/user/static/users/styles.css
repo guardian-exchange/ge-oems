@@ -51,3 +51,35 @@ address {
   color: #666;
   margin-top: 30px;
 }
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chart-box {
+  background-color: #f8f8f8;
+  border: 1px solid #999;
+  border-radius: 2px;
+  padding: 10px;
+}
+
+.chart-box h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #0000cc;
+}
+
+canvas {
+  width: 100% !important;
+  height: 250px !important;
+}
+
+/* Optional: Responsive fallback for narrow screens */
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
