@@ -14,3 +14,8 @@ class LoginForm(AuthenticationForm):
 
 class StockConnectForm(forms.Form):
     stock_name = forms.CharField(label="Stock Name", max_length=100)
+
+class PlaceOrderForm(forms.Form):
+    stock_name = forms.CharField(label="Stock Name", max_length=100)
+    stock_quantity = forms.IntegerField(label="Stock Quantity", min_value=1, max_value=1000)
+    stock_side = forms.CharField(label="Side", max_length=10)
