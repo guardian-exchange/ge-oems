@@ -55,7 +55,7 @@ const ws = new WebSocket(`ws://${WS_HOST}:${WS_PORT}`);
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   symbols.forEach((symbol) => {
-    const price = data[symbol];
+    const price = data[symbol]["price"];
     if (price !== undefined) {
       priceHistory[symbol].push(price);
       if (priceHistory[symbol].length > HISTORY_LENGTH) {

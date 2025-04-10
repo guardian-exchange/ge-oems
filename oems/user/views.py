@@ -1,6 +1,7 @@
 from django.http import HttpResponse, JsonResponse
+from django.utils.html import format_html
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, get_user_model
 from .forms import SignupForm, LoginForm, StockConnectForm, PlaceOrderForm
 from django.contrib.auth.decorators import login_required
 from stocks.models import Stock
@@ -14,29 +15,35 @@ import os
 WS_HOST = os.environ.get("SM_HOST", "localhost")
 WS_PORT = os.environ.get("SM_PORT", "8765")
 
+
 def update_stock(message):
     """
     Update stock prices based on a dictionary where keys are stock names
     and values are the new prices.
     """
     for stock_name, new_price in message.items():
-        updated_count = Stock.objects.filter(stock_name=stock_name).update(current_price=float(new_price))
+        updated_count = Stock.objects.filter(stock_name=stock_name).update(
+            current_price=float(new_price)
+        )
         if updated_count == 0:
             print(f"[Warning] Stock '{stock_name}' not found in DB.")
         else:
-            print(f"[Info] Updated '{stock_name}' to price {new_price}.")   
+            print(f"[Info] Updated '{stock_name}' to price {new_price}.")
+
 
 def do_place(user, stock_name, stock_quantity, stock_side):
     try:
         # Lock stock and user rows for consistency
         stock = Stock.objects.select_for_update().get(stock_name=stock_name)
-        
+
         current_price = stock.current_price
         total_cost = current_price * int(stock_quantity)
 
         if stock_side.lower() == "buy":
             if total_cost > user.balance:
-                print(f"Insufficient balance, cost {total_cost} and balance {user.balance}")
+                print(
+                    f"Insufficient balance, cost {total_cost} and balance {user.balance}"
+                )
                 return
 
             user.balance -= total_cost
@@ -51,7 +58,9 @@ def do_place(user, stock_name, stock_quantity, stock_side):
 
         elif stock_side.lower() == "sell":
             try:
-                user_stock = UserStock.objects.select_for_update().get(user=user, stock=stock)
+                user_stock = UserStock.objects.select_for_update().get(
+                    user=user, stock=stock
+                )
             except UserStock.DoesNotExist:
                 print(f"You don't own any {stock_name} to sell.")
                 return
@@ -76,7 +85,8 @@ def do_place(user, stock_name, stock_quantity, stock_side):
         print(f"Stock '{stock_name}' not found.")
     except Exception as e:
         print(f"Error placing order: {e}")
-    
+
+
 def open_ws(stock_name):
     def on_message(ws, message):
         print(f"Received from WS: {json.loads(message)}")
@@ -103,9 +113,11 @@ def open_ws(stock_name):
     # Run WebSocket in background thread
     threading.Thread(target=ws.run_forever).start()
 
+
 @login_required
 def index(request):
     return render(request, "users/dashboard.html")
+
 
 def signup_view(request):
     if request.method == "POST":
@@ -118,6 +130,7 @@ def signup_view(request):
         form = SignupForm()
     return render(request, "users/signup.html", {"form": form})
 
+
 def login_view(request):
     if request.method == "POST":
         form = LoginForm(data=request.POST)
@@ -128,9 +141,38 @@ def login_view(request):
         form = LoginForm()
     return render(request, "users/login.html", {"form": form})
 
+
 def logout_view(request):
     logout(request)
     return redirect("login")
+
+
+def profile_view(request):
+    if request.method != "GET":
+        return HttpResponse(
+            "Only GET is supported at endpoint /user/login/",
+            status=400,
+        )
+
+    User = get_user_model()
+    try:
+        user_id = request.user.id
+        user = User.objects.get(id=user_id)
+        return render(
+            request,
+            "users/profile.html",
+            {
+                "user": user,
+            },
+        )
+    except User.DoesNotExist:
+        return HttpResponse(
+            format_html(
+                'User not found. Please <a href="/user/login/">login</a>.',
+            ),
+            status=400,
+        )
+
 
 # NOTE: Added for testing the endpoint
 # from django.views.decorators.csrf import csrf_exempt
@@ -147,6 +189,7 @@ def make_ws_con(request):
         form = StockConnectForm()
 
     return render(request, "users/ws_conn_form.html", {"form": form})
+
 
 @login_required
 def place_order(request):

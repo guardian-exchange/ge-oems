@@ -5,30 +5,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Guardian Exchange</title>
+    <title>Profile - Guardian Exchange</title>
     <link rel="stylesheet" href="{% static 'users/styles.css' %}" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <h1>Index of /user/</h1>
+    <h1>Index of /profile</h1>
     <hr />
 
     <div class="layout">
       <nav class="sidebar">
         <ul>
-          <li><a href="{% url 'profile' %}">📁 Profile</a></li>
           <li><a href="{% url 'logout' %}">📁 Logout</a></li>
         </ul>
       </nav>
     </div>
 
-    <main class="dashboard" id="dashboard" style="margin-top:20px;">
-      <!-- JS renders the dashboard here -->
-    </main>
-
+    <div class="profile-box">
+      <p><strong>Username:</strong> {{ user.username }}</p>
+      <p><strong>Email:</strong> <a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+      <p><strong>Balance:</strong> ₹{{ user.balance }}</p>
+      <p><strong>Is Admin:</strong> {{ user.is_superuser }}</p>
     <hr />
     <address>Guardian Exchange Server at Port :80</address>
-
-    <script type="module" src="{% static 'users/dashboard.js' %}"></script>
   </body>
 </html>

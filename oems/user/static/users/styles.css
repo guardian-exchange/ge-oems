@@ -105,7 +105,6 @@ canvas {
 }
 
 .sidebar a {
-  color: #0000cc;
   text-decoration: none;
 }
 
@@ -113,8 +112,17 @@ canvas {
   text-decoration: underline;
 }
 
-/* .dashboard {
-  flex-grow: 1;
+a {
+  color: #0000cc;
+}
+
+.profile-box {
   font-family: monospace;
-  padding-left: 10px;
-} */
+  font-size: 14px;
+  color: #000;
+  margin-top: 20px;
+}
+
+.profile-box p {
+  margin: 8px 0;
+}
