@@ -53,7 +53,8 @@ def open_ws(stock_name):
 
 @login_required
 def index(request):
-    return HttpResponse(f"<h1>Welcome, {request.user.username}!</h1>")
+    return render(request, "users/dashboard.html")
+    # return HttpResponse(f"<h1>Welcome, {request.user.username}!</h1>")
 
 def signup_view(request):
     if request.method == "POST":
@@ -81,8 +82,9 @@ def logout_view(request):
     return redirect("login")
 
 # NOTE: Added for testing the endpoint
-# from django.views.decorators.csrf import csrf_exempt
-# @csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
+# @csrf_exemptgo.views.decorators.csrf import csrf_exempt
+# @csrf_exem
 def make_ws_con(request):
     if request.method == "POST":
         form = StockConnectForm(data=request.POST)
