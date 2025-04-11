@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
+    {% csrf_token %}
+
     <h1>Index of /user/</h1>
     <hr />
 
@@ -18,16 +20,22 @@
         <ul>
           <li><a href="{% url 'profile' %}">📁 Profile</a></li>
           <li><a href="{% url 'logout' %}">📁 Logout</a></li>
+          <p>
+            <strong>Balance:</strong>
+            <span id="user-balance">{{ user.balance }}</span>
+          </p>
         </ul>
       </nav>
     </div>
 
-    <main class="dashboard" id="dashboard" style="margin-top:20px;">
+    <main class="dashboard" id="dashboard" style="margin-top: 20px">
       <!-- JS renders the dashboard here -->
     </main>
 
     <hr />
     <address>Guardian Exchange Server at Port :80</address>
+
+    <div id="toast-container" class="toast-container"></div>
 
     <script type="module" src="{% static 'users/dashboard.js' %}"></script>
   </body>

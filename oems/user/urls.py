@@ -8,5 +8,6 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile_view, name="profile"),
     path("ws_conn/", views.make_ws_con, name="make websocket connection"),
-    path("place_order/", views.place_order, name="plae a new order"),
+    path("get-balance/", views.get_balance, name="get_balance"),
+    path("place_order/", views.place_order, name="place a new order"),
 ]

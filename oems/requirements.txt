@@ -2,3 +2,4 @@ django
 django-environ
 channels
 websocket-client
+termcolor

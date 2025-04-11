@@ -4,8 +4,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from .forms import SignupForm, LoginForm, StockConnectForm, PlaceOrderForm
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from stocks.models import Stock
 from user.models import UserStock, User
+from termcolor import colored
 import websocket
 import threading
 import json
@@ -14,6 +16,12 @@ import os
 # Environment variables
 WS_HOST = os.environ.get("SM_HOST", "localhost")
 WS_PORT = os.environ.get("SM_PORT", "8765")
+
+
+def debug_http_response(message, status=200):
+    if settings.DEBUG:
+        print(colored(f"DEBUG: {message}", "blue" if status == 200 else "red"))
+    return HttpResponse(message, status=status)
 
 
 def update_stock(message):
@@ -41,10 +49,10 @@ def do_place(user, stock_name, stock_quantity, stock_side):
 
         if stock_side.lower() == "buy":
             if total_cost > user.balance:
-                print(
-                    f"Insufficient balance, cost {total_cost} and balance {user.balance}"
+                return debug_http_response(
+                    f"Insufficient funds: cost {total_cost} and balance {user.balance}",
+                    status=400,
                 )
-                return
 
             user.balance -= total_cost
             user.save()
@@ -54,7 +62,10 @@ def do_place(user, stock_name, stock_quantity, stock_side):
             user_stock.quantity += stock_quantity
             user_stock.save()
 
-            print(f"Bought {stock_quantity} {stock_name} at {current_price} each.")
+            return debug_http_response(
+                f"Bought {stock_quantity} {stock_name} at {current_price} each.",
+                status=200,
+            )
 
         elif stock_side.lower() == "sell":
             try:
@@ -62,12 +73,16 @@ def do_place(user, stock_name, stock_quantity, stock_side):
                     user=user, stock=stock
                 )
             except UserStock.DoesNotExist:
-                print(f"You don't own any {stock_name} to sell.")
-                return
+                return debug_http_response(
+                    f"Insufficient stocks: you do not possess any {stock_name} to sell.",
+                    status=400,
+                )
 
             if user_stock.quantity < stock_quantity:
-                print(f"Not enough {stock_name} to sell.")
-                return
+                return debug_http_response(
+                    f"Insufficient stocks: you only possess {user_stock.quantity} of {stock_name}.",
+                    status=400,
+                )
 
             user_stock.quantity -= stock_quantity
             user_stock.save()
@@ -75,16 +90,25 @@ def do_place(user, stock_name, stock_quantity, stock_side):
             user.balance += total_cost
             user.save()
 
-            print(f"Sold {stock_quantity} {stock_name} at {current_price} each.")
+            return debug_http_response(
+                f"Sold {stock_quantity} {stock_name} at {current_price} each.",
+                status=200,
+            )
 
         else:
-            print("Invalid stock_side. Use 'buy' or 'sell'.")
-            return
+            return debug_http_response(
+                f"Invalid side: expected either 'buy' or 'sell'.",
+                status=400,
+            )
 
     except Stock.DoesNotExist:
-        print(f"Stock '{stock_name}' not found.")
+        return debug_http_response(
+            f"Invalid stock name '{stock_name}'.",
+            status=400,
+        )
     except Exception as e:
-        print(f"Error placing order: {e}")
+        print(colored(f"ERROR: placing order: {e}", "red"))
+        return HttpResponse("Error occured", status=400)
 
 
 def open_ws(stock_name):
@@ -192,6 +216,11 @@ def make_ws_con(request):
 
 
 @login_required
+def get_balance(request):
+    return JsonResponse({"balance": request.user.balance})
+
+
+@login_required
 def place_order(request):
     if request.method == "POST":
         form = PlaceOrderForm(data=request.POST)
@@ -199,8 +228,7 @@ def place_order(request):
             stock_name = form.cleaned_data["stock_name"]
             stock_quantity = form.cleaned_data["stock_quantity"]
             stock_side = form.cleaned_data["stock_side"]
-            do_place(request.user, stock_name, stock_quantity, stock_side)
-            return HttpResponse(f"<h1>Placing order...</h1>")
+            return do_place(request.user, stock_name, stock_quantity, stock_side)
     else:
         form = PlaceOrderForm()
 
